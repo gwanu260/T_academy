@@ -1,0 +1,67 @@
+<html>
+<head></head>
+<body>
+    <div>
+        <fieldset> <!-- 경계선 표기 -->
+            <!-- inline 방식으로 JS가 표현됨 -->
+            <button onclick="evtMakeChart();">차트그리기</button>
+            <canvas id="chart_id"/> <!-- canvas는 2d 그래픽용/차트/ 배경으로 사용 -->
+        </fieldset>
+    </div>
+    <!-- 데이터를 html쪽으로 가져와야 하는 라이브러리(axios) or
+         내장된기능( fetch() ) : https://developer.mozilla.org/ko/docs/Web/API/Fetch_API/Using_Fetch
+    -->
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 동적으로 차트를 그린다 : html + js 연동되어서 대시보드의 한파트 표현에 대한 데모 -->
+    <script>
+        // 차트를 그릴 대상(html 요소:element를 ) 특정(찾아라)해서 
+        // js에서 엑세스 가능하게 `객체(DOM(Document Object Model) Tree형태로 제공)`로 획득-->
+        const chartCanvas = document.getElementById('chart_id');
+        console.log( 'chartCanvas의 정체는', chartCanvas );
+
+        // 요구사항 -> 차트그리기라는 버튼 추가 : html
+        //         -> 버튼을 클릭하면 차트를 그리게 처리 : JS (EVENT 처리)
+        function evtMakeChart () {
+            // 데이터 획득 -> js에서 통신요청(ajax방식으로 통신한다)
+            // Promise 패턴 스타일로 통신 진행(비동기 프로그램을 동기식으로 구성하는 루틴)
+            axios.get('http://localhost:5500/html_css/sales.json')
+                .then( function(response) {
+                    // 언젠가 요청의 결과가 도착하면(비동기적, 즉각적이지 않음)
+                    // -> 다음 작업(차트그리기) 진행해라
+                    console.log( response.data );
+                    makeChart( response.data );
+                } )
+            console.log('무조건 수행');
+        }
+        console.log('무조건 수행');
+
+        function makeChart(datas) {
+            console.log( '차트 그리기 시작' );
+            // 라이브러리 사이트 가서 사용법 공부 후 데이터를 맞춰주면 차트는 그려진다!!
+            const labels = datas.map( function(sales) { return sales.label } )
+            const data   = datas.map( sales => sales.data )
+            new Chart( chartCanvas, {
+                type:'bar', 
+                data:{      
+                    labels:labels,
+                    datasets:[
+                        {
+                            label:'# sales 판매량',
+                            data:data,
+                            borderWidth:1
+                        }
+                    ]
+                },
+                options:{   
+                    scales:{
+                        y:{
+                            beginAtZero:true
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

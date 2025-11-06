@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block contents %}
+    <h2>sales 게시판</h2>
+    <div>
+        {# 검색창-주문서 모델명 중심으로 검색-데이터가 너무 많아서 바로 찾기힘듬 #}
+        <!-- <form action="/sales/board/" method="post"> -->
+        <form method="post"> {# action 속성 생략 -> url:현 페이지의 주소가 됨 #}
+            {# input 태그로 form 전송시 전송 데이터의 키값은 name속성을 결정 
+               반드시 name 속성을 부여, name과 id 속성값을 통상 동일하게 구성
+            #}
+            <input type="text" placeholder="Search" name="query" id="query">
+            <button type="submit">검색</button>
+        </form>
+        {# 검색결과, 기본정보 출력하는 화면 -> 대량의 데이터를 효율적표시->리스트#}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>주문번호</th>
+                    <th>회원번호</th>
+                    <th>대리점</th>
+                    <th>모델</th>
+                    <th>수량</th>
+                    <th>가격</th>
+                    <th>판매일</th>
+                </tr>
+            </thead>
+            <tbody id="search_results">
+                {% for sale in sales %}                
+                <tr>
+                    <td>
+                        {# 주문번호에 링크+데이터(경로 매개변수방식) 추가함 #}
+                        <a href="/sales/detail/{{ sale.get("order_no") }}">
+                        {{ sale.get("order_no") }}
+                        </a>
+                    </td>
+                    <td>{{ sale.get("mem_no") }}</td>
+                    <td>{{ sale.get("store_cd") }}</td>
+                    <td>{{ sale.get("model") }}</td>
+                    <td>{{ sale.get("quantity") }}</td>
+                    <td>{{ sale.get("price") }}</td>
+                    <td>{{ sale.get("join_date") }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

@@ -1,0 +1,46 @@
+<html>
+<head></head>
+<body>
+    <!-- 로그인 화면 -->
+    <div>
+        <p>로그인</p>
+        <!--
+            클라이언트 -> 서버로 데이터를 전송(검색, 로그인,..)
+            전송 방식 -> http 프로토콜의 method (get, post, put, delete, head,...)
+                - get 방식으로 데이터를 서버측에 전송하세요..
+                - get (소량데이터, 보완에 취약, url에 ?뒤로 표기됨 or 링크)
+                - post (대량데이터, 보안에 우수, 숨겨서 전송)
+            전송 방법
+                - http 헤더에 넣어서 전송 (get)
+                    -> url에 넣어서 전송 (경로 매개변수)
+                    -> ?뒤로 붙여져 전송 (인자 매개변수)
+                - http body에 넣어서 전송 (post, put, delete, ...)
+            - form 태그의 action 속성 : 데이터를 받을 서버측 주소
+            - form 태그의 method 속성 : 데이터 전달하는 방식
+            - form 전송
+        -->
+        <form action="/login" method="post">
+            <input type="text" id="uid" placeholder="아이디"/>
+            <input type="password" id="upw" placeholder="비밀번호"/>
+            <input type='submit' value="로그인"/>
+        </form>
+    </div>
+    <!-- js 로그인 처리 구현 -->
+    <script>
+        // 로그인 함수 정의
+        function login() {
+            console.log('로그인 함수 호출');
+            // 로그인을 위해서는 사용자가 입력한 아이디, 비번 회득
+            // 아이디, 비번을 입력받은 (혹은 엘리먼트)를 특정하여, 입력값을 추출 => <input />
+            // alert('로그인');
+            // html문서내에서 요소를 특정하는 방법 => css selector, xpath, ...
+            // id 특정 방법 => # 아이디값
+            let uid = document.querySelector('#uid');
+            let upw = document.querySelector('#upw');
+            console.log( uid.value, upw.value );
+            // 이후 ajax나 form 전송으로 백엔드로 데이터를 전달하면 -> 로그인이 시작됨
+        }
+
+    </script>
+</body>
+</html>

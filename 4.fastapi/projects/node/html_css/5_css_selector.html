@@ -1,0 +1,54 @@
+<!--
+css selector
+    - html 문서 내에서 특정 엘리먼트(=시작태그+콘텐츠+닫기태그)를 찾는 방법
+    - 활용 : JS에서 html 엑세스시, 웹대상 데이터수집시 사용, css에서 디자인적용
+    - 규칙
+        - 아이디값(문서내에 고유한값)
+        - 클레스값
+        - 요소명
+        - 부모 요소명 (관계)
+        
+        - 조합(위의 방법 섞어서 사용) 
+        - 열거(,로 구분)
+        - 서열(부모, 자식, 형제, 자손,..)
+        
+        - 반복적
+            - 의사결정 셀렉터(리스트적인 요소)
+        
+        - 입력
+            - 속성셀렉터
+-->
+<html>
+<head>
+    <!-- 편의상 JS 라이브러리중 jQuery 사용 활용. -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+    <div>
+        <h2>제목</h2>
+        <h2 id="contents">내용</h2>
+        <h2 class="myStyle">클레스 적용</h2>
+        
+        <p class="myStyle">클레스 적용2</p>
+    </div>    
+    <script>
+        // 1. 모든 요소 : *
+        // 모든 요소의 글자색을 파랑색으로 세팅하시오.
+        // jQuery는 특정하는 방법 => 
+        // $('css selector') == document.querySelector('css selector')
+        $('*').css('color','blue');
+
+        // 2. 아이디값으로 특정
+        // 아이디가 contents인 요소를 찾아서, 글자색 빨강처리
+        //    # + id값
+        $('#contents').css('color','red');
+
+        // 3. 클레스값으로 특정
+        //    불특정 다수를 그룹을 묶는것이 CLASS의 본질 -> 디자인 적용
+        //    . + class값
+        $('.myStyle').css('backgroundColor','yellow');
+
+        // 나머지는 필요시 체크
+    </script>
+</body>
+</html>

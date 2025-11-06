@@ -1,0 +1,30 @@
+<html>
+<head></head>
+<body>
+    <!-- 로그인 화면 -->
+    <div>
+        <p>로그인</p>
+        <!-- id는 특정 엘리먼트(혹은 태그)를 유일하게 구분할 수 있는 고유값을 가진다 -->
+        <input type="text" id="uid"/>
+        <input type="password" id="upw"/>
+        <button onclick="login();">로그인</button>
+    </div>
+    <!-- js 로그인 처리 구현 -->
+    <script>
+        // 로그인 함수 정의
+        function login() {
+            console.log('로그인 함수 호출');
+            // 로그인을 위해서는 사용자가 입력한 아이디, 비번 회득
+            // 아이디, 비번을 입력받은 (혹은 엘리먼트)를 특정하여, 입력값을 추출 => <input />
+            // alert('로그인');
+            // html문서내에서 요소를 특정하는 방법 => css selector, xpath, ...
+            // id 특정 방법 => # 아이디값
+            let uid = document.querySelector('#uid');
+            let upw = document.querySelector('#upw');
+            console.log( uid.value, upw.value );
+            // 이후 ajax나 form 전송으로 백엔드로 데이터를 전달하면 -> 로그인이 시작됨
+        }
+
+    </script>
+</body>
+</html>

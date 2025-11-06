@@ -1,0 +1,11 @@
+{% macro input_tag( type, placeholder, name, size=10, value='') %}
+    <div>
+        <input type="{{ type }}"
+        placeholder="{{ placeholder }}"
+        name="{{ name }}"
+        size="{{ size }}"
+        value="{{ value }}"
+        required/>
+    </div>
+{% endmacro %}
+{# value값을 세팅하는 경우는 데이터 수정시 활용 #}

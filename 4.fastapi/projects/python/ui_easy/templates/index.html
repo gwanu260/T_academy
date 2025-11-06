@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block contents %}
+    <h2>홈페이지</h2>
+    {# c -> s 데이터를 전달하는 방법중 html 의 기법 한가지, 링크, 링크+데이터 #}
+    <div>
+    <a href="/sales/board/">sales 게시판</a>
+    </div>
+    <div>
+    <a href="/users/login/">로그인</a>
+    </div>
+    <div>
+        <a href="/users/logout/">로그아웃</a>
+    </div>
+{% endblock %}

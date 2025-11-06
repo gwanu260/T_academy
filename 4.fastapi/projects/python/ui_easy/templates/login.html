@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% import 'macros.html' as mac %}
+
+{% block header %}
+    <h2>로그인</h2>
+{% endblock %}
+
+{% block contents %}
+    <form method="post">
+        {{ mac.input_tag('text', '아이디', 'uid') }}
+        {{ mac.input_tag('password', '비밀번호', 'upw') }}
+        {{ mac.input_tag('submit', '', '', '', '로그인')}}
+        <!--
+        <input type = "text" placeholder="아이디"
+            name="uid" maxlength="10" size="5" value="sk"/>
+        <input type = "password" placeholder="비밀번호" name="upw"/>
+        <input type = "submit"  value="로그인"/>
+        -->
+    </form>
+{% endblock %}

@@ -1,0 +1,89 @@
+<!--
+    - 네트워크를 통해서 데이터를 획득 (통신)
+        - axios 라이브러리 사용
+        - html에 아래 링크를 넣으면 바로 통신모듈 axios를 사용할 수 있음 => 이런방식을 CDN이라고 함
+            - <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+    - 차트 표현 (chartjs 라이브러리 사용)
+        - chartjs CDN(링크를 추가함으로써 라이브러리 사용 가능) 방식 첨부
+            - https://cdnjs.com/libraries/Chart.js
+
+    - 동적 데이터를 네트워크를 통해서 획득 -> 가공/전처리 -> 차트에 반영
+        - 아직, 백엔드 구성 x, 시뮬레이션으로 제공
+        - http://localhost:5500/html_css/sales.json
+        - 데이터는 json 형식(반정형 데이터) <=> dict <=> JS의 객체
+
+    - 차트 시각화 => 대시보드의 한 파트의 프로토타입
+    - 참고
+        - js 라이브러리 검색 -> npmjs.com 진행
+-->
+
+<html>
+<head></head>
+<body>
+    <!-- UI -->
+    <div>
+        <!-- 차트 영역 -->
+        <fieldset>
+            <canvas id="chart_id"/>
+        </fieldset>
+    </div>
+    <!-- 이벤트, 통신, 동적구성,... -->
+    <!-- html 내부에 js를 포함시키는 방법
+        - external  -> 외부 js를 참조 <script>.... </script>
+        - internal  -> script 열어서 직접 작성 <script>.... </script>
+        - inline    -> html에 직접 js를 세팅 <button on click="login();">로그인</button>
+     
+    -->
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // body안에 있는 모든내용이 화면에 그려지고 나서, js를 작동시키는 의미로 가장 마지막에 위치함
+        // 1. 차트를 그릴 영역을 특정하여(찾아서) 변수 생성 => 캔버스 요소 획득
+        //    html 요소를 js 코드 내부로 가져와야지 조작, 액세스 가능(DOM Tree모델) => 동적으로 차트 그리기
+        // const chartCanvas = document.querySelector('#char_id'); // css selector
+        const chartCanvas = document.getElementById('chart_id');
+
+        // 2. ajax 통신을 통해 sales.json 데이터 획득하여 메모리 로드 => 객체 생성
+        //    axios를 이용 -> sales.json 데이터를 get방식 요청 -> 응답 -> {}로 생성
+        axios.get('http://localhost:5500/html_css/sales.json')
+             .then( function(response) {
+                console.log( response.data ); // 실 데이터
+                // 차트 그리기 3번 공정 호출
+                makeChart( response.data );
+             } )
+        console.log('무조건 수행'); // 비동기임을 체크하는 임시코드
+
+        // 3. 통신이 끝나면 데이터를 이용하여 차트 그리기
+        function makeChart(datas) {
+            // 차트 그리기 시작
+            console.log( '차트 그리기 시작' );
+            // 3-1. 데이터 가공
+            // ['A', 'B', 'C',...]
+            const labels = datas.map( sales => sales.label )
+            // [700,500,300,...]
+            const data   = datas.map( sales => sales.data )
+            // 3-2. 차트 객체 생성 -> 자동 드로잉 -> 캔버스 영역 갱신
+            new Chart( chartCanvas, {
+                type:'bar', // 바차트, 차트 유형
+                data:{      // 차트에 세팅될 데이터
+                    labels:labels,
+                    datasets:[
+                        {
+                            label:'# sales 판매량',
+                            data:data,
+                            borderWidth:1
+                        }
+                    ]
+                },
+                options:{   // 차트 외관등 옵션 사항
+                    scales:{
+                        y:{
+                            beginAtZero:true
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

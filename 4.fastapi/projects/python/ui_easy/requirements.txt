@@ -1,0 +1,8 @@
+fastapi==0.120.2
+uvicorn==0.27.0.post1
+jinja2==3.1.2
+pymysql==1.1.2
+sqlAlchemy
+cryptography==2.2.0
+itsdangerous
+python-multipart==0.0.20
