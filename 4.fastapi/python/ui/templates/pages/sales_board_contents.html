@@ -1,0 +1,97 @@
+{# 서버측에서 `car_mart 뷰 데이터 상위 10개만 가져와서` => 화면 표시 #}
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Sales 게시판</h1>
+                </div><!-- /.col -->
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item active">Sales</li>
+                    </ol>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Small boxes (Stat box) -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">자동차 판매 데이터</h3>
+                            <div class="card-tools">
+                                <div class="input-group input-group-sm" style="width: 150px;">
+                                    {# 주문 데이터 대상 검색어 입력하는 창 
+                                        1. js가 html을 핸들링 하기위해 -> 해당 요소를 찾아야함 -> css selector
+                                           -> 가장 쉬운 셀렉터 문법은 id값으로 찾기 -> 개발자가 임의로 부여함   
+                                           #searchInput : 해당 문서상에 존재하는 모든 id들 중에  searchInput을 값으로 가진 id를 찾아서,
+                                           이 id를 가진 요소를 특정한다(찾는다)
+                                    #}
+                                    <input type="text" name="table_search" class="form-control float-right"
+                                        placeholder="Search" id="searchInput">
+
+                                    <div class="input-group-append">
+                                        {# 검색을 진행하는 트리거 -> 이벤트는 클릭|엔터 #}
+                                        <button type="submit" class="btn btn-default" id="searchBtn">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                            <table class="table table-bordered table-hover text-nowrap table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>주문번호</th>
+                                        <th>회원번호</th>
+                                        <th>대리점</th>
+                                        <th>모델</th>
+                                        <th>수량</th>
+                                        <th>가격</th>
+                                        <th>판매일</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="search_results">
+                                    {#
+                                    | order_no | mem_no | store_cd | quantity | price
+                                    | model| join_date
+                                    #}
+                                    {% for sale in sales %}
+                                    <tr onclick="showDetail( '{{ sale.get("order_no") }}' );">
+                                        <td>{{ sale.get("order_no") }}</td>
+                                        <td>{{ sale.get("mem_no") }}</td>
+                                        <td>{{ sale.get("store_cd") }}</td>
+                                        <td>{{ sale.get("model") }}</td>
+                                        <td>{{ sale.get("quantity") }}</td>
+                                        <td>{{ sale.get("price") }}</td>
+                                        <td>{{ sale.get("join_date") }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer clearfix">
+                            <ul class="pagination pagination-sm m-0 float-right">
+                                <li class="page-item"><a class="page-link" href="#">«</a></li>
+                                <li class="page-item"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item"><a class="page-link" href="#">»</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>            
+        </div>
+    </section>
+</div>
