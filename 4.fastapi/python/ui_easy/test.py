@@ -76,3 +76,48 @@ class ItemEx(BaseModel):
 @app.post("/test/itemex/")
 def insert_item( item : ItemEx ):
     return { "전송결과": item.dict() }
+
+
+from pydantic import Field
+# 필드 제약 조건 => Field 클래스 활용
+'''
+- default   : 기본값
+- alias     : JSON 구성시 파이썬 변수와 다른 이름으로 설정하고 싶다면
+- title     : 문서화 구성시 주로 사용
+- description : 필드의 설명(해당 데이터의) 문서화에서 확인
+- min_length or max_length : 최소, 최대 길이 제약
+- gt(greater than), lt(less than) : 숫자 크기 제약
+- regex     : 정규식 -> 암호, 이메일등 형식을 잡을때
+'''
+class ItemDetail(BaseModel):
+      # ... 명시하지 않는 것은 Field 기본값을 따라간다
+      name  : str   = Field(..., min_length=4, max_length=16)
+      price : int   = Field(..., gt=0, description="양수만 사용 가능")
+      tax   : float = Field(..., alias="kor_tax")
+
+'''
+# "type": "missing", 에러 => kor_tax 누락
+{
+    "name":"맥북프로",
+    "price":2700000,
+    "tax":0.1
+}
+# kor_tax로 변경해서 전송
+{
+    "name":"맥북프로",
+    "price":2700000,
+    "kor_tax":0.1
+}
+# 가격을 0으로 조정 -> greater_than 오류 -> 422 -> 0 이상 입력
+{
+    "name":"맥북프로",
+    "price":0,
+    "kor_tax":0.1
+}
+'''
+
+@app.post("/test/itemdetail/")
+def insert_item( item : ItemDetail ):
+    return { "전송결과": item.dict() }
+
+# TODO Pydantic 남은 파트 : 중첩, 리스트, 제네릭 표기 => T => 차후 진행
