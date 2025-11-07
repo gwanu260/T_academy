@@ -1,14 +1,12 @@
-# pip install python-multipart
-# TODO Redirect 3 status 모듈 가져오기
 from fastapi import FastAPI, Request, Form, status
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-# TODO Redirect 1 포워딩을 위한 클레스
 from fastapi.responses import RedirectResponse
-# TODO SESSION 1 세션을 위한 클레스
 from starlette.middleware.sessions import SessionMiddleware
 from db import *
+# 1. pydantic, typing 추가
 from pydantic import BaseModel
+from typing import Annotated
 
 
 app = FastAPI()
@@ -18,8 +16,6 @@ app.mount(
     ,StaticFiles(directory="static")
     ,name="static"
 )
-# TODO SESSION 2 미들웨어등록, 시크릿키(세션의 기본재료) 등록, 쿠키만료시간등
-#      시크릿키(세션의 기본재료) => 코드내 삽입 X -> 환경변수 설정및가져오기(개선)
 app.add_middleware(
     SessionMiddleware,
     secret_key='wsldfjwefjo823rlkwefnlkefnles', # 추후 외부에서 관리
@@ -27,8 +23,15 @@ app.add_middleware(
     max_age=1*60*60*24 # 현재는 1일 적용, 초단위
 )
 
+# 2. pydantic 모델 정의(클래스단위, 통신시 주고 받는 데이터 형태)
+# HTML 폼전송으로 전달되는 필드 uid, upw의 타입과 구조를 정의
+# 길이, 반드시 들어간 값 형태 등등 모두 생략 => Field로 추후적용
+class LoginForm(BaseModel): # 타입, 필수옵선임을 설정
+    uid : str
+    upw : str
+
 @app.get("/")
-#@app.post("/") # 특정 함수에 get, post를 모두 등록할수 있다
+
 def home(req : Request):
     # TODO 세션체크 1 -> 모든 페이지에 해당 체크 코드를 삽입해야 하는가?
     # 향후 모든 요청이 통과하는 지점에 세션 체크를 삽입 -> 모든 요청에 대한 체크 OK
@@ -40,14 +43,12 @@ def home(req : Request):
     # html 파일을 읽어서 + 데이터가 있다면 전달 => 동적구성 => html 텍스트 응답  
     return templates.TemplateResponse("index.html", {"request":req} )
 
-# /sales/board/ 해당주소로 get방식 요청이 왔을때 처리
-# /sales/board/ 해당주소로 post방식 요청 하면 -> 준비 않되어 있음 -> Method Not Allowed (405)
 @app.get("/sales/board/")
 def board(req : Request, pno : int = 1 , pcnt : int = 10):
     rows = demo_select_car_mart( pno, pcnt )
     return templates.TemplateResponse("sales_board.html",{"request":req,"sales":rows} )
 
-# /sales/search/ => /sales/board/ 변경 : 
+
 @app.post("/sales/board/")
 def search(req : Request,  query: str = Form(...) ):
     rows =  select_order_by_model( query )
@@ -63,20 +64,20 @@ def read_data(req:Request, order_no:str):
         ,"order":select_order_detail( order_no ) 
     })
 
-# 404 not found => 해당 주소로 처리할 페이지가 없다 => url등록
 @app.get('/users/login/')
 def login(req:Request):
     # login.html 읽어서 화면 출력
     # return {'page':'로그인'}
     return templates.TemplateResponse("login.html", {"request":req} )
 
-# 로그인 요청 처리하는 파트
+# 3. pydantic 모델을 이용한 로그인 처리
 @app.post('/users/login/')
-def login(req:Request, uid:str = Form(...), upw:str = Form(...)):
-    # 1. 사용자 ID, PW 획득
+def login(req:Request, form_data: Annotated[ LoginForm, Form() ]):
+    # 리뷰때 Field 옵션 부여하여 길이제약 드읃ㅇ 테스트
+    uid = form_data.uid
+    upw = form_data.upw
+
     print( uid, upw )
-    # 2. 데이터베이스 질의 -> 회원이지 체크 -> 맞으면 회원정보(필요한만큼) 전달
-    # 2. 일단 기능성 구성 -> 디비없이 고정값으로 로그인 처리 -> 임시코드
     if uid == 'admin' and upw == '1234':
         # 2-2. 회원이면 
         print('회원임')
@@ -97,7 +98,6 @@ def login(req:Request, uid:str = Form(...), upw:str = Form(...)):
         return templates.TemplateResponse('loginFail.html', {"request":req} )
         pass
         
-# TODO LOGOUT 1 로그아웃 처리
 @app.get("/users/logout")
 def home(req : Request):
     # 1. 세션 여부 확인
@@ -108,4 +108,3 @@ def home(req : Request):
     # 1-2. 여기서는 로그인 화면으로 이동 -> get이므로 307 기본상태값 유지
     # 1-3. 없으면 -> 잘못된 접근 경고 -> 로그인 이동
     return RedirectResponse(url='/users/login') 
-    
