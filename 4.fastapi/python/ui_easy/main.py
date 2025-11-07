@@ -106,7 +106,7 @@ def home(req : Request):
     
     # 1-2. 여기서는 로그인 화면으로 이동 -> get이므로 307 기본상태값 유지
     # 1-3. 없으면 -> 잘못된 접근 경고 -> 로그인 이동
-    return RedirectResponse(url='/users/login')
+    return RedirectResponse(url='/users/login') 
     
         
     
