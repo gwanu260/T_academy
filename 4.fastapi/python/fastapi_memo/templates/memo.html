@@ -177,6 +177,7 @@
 
 <body>
     <div class="container">
+        {# 메모 입력 창 #}
         <div class="card">
             <div class="card-body">
                 <input type="text" id="new-title" placeholder="새 메모 제목" class="form-control memo-title">
@@ -184,7 +185,8 @@
                 <button class="btn btn-primary btn-block">메모 추가</button>
             </div>
         </div>
-
+        
+        {# 메모 게시판 #}
         {% for memo in memos %}
         <div class="card memo">
             <div class="card-body">               

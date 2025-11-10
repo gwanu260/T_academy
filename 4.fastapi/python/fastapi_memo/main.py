@@ -74,7 +74,10 @@ BaseTableModel.metadata.create_all(bind=engine)
 
 
 @app.get("/")
-def home(req : Request):
+def home(req : Request,
+         db_conn : Session = Depends(get_connection)):
+    # html 읽어서 -> 필요한 데이터를 전달하여 -> 데이터 이용하여 동적으로 html 구성
+    # html을 응답 => TemplateResponse
     return templates.TemplateResponse('memo.html',{"request":req})
 
 # restful 방식으로 URL 설계중 -> CRUD -> 기능만 구현중!!(화면 x) -> API 구현중
