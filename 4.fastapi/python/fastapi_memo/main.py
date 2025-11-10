@@ -94,16 +94,16 @@ async def create_memo(memo : MemoInsert,
         - 메모 데이터를 이용하여 Memo 클레스기반 객체 1개 생성
         - db_conn을 이용하여 데이터베이스에 추가
         - db_conn을 이용하여 커밋처리
-        - db_conn을 이용하여 새로고침 처리
+        - db_conn을 이용하여 이용하여 새로고침 처리
     - 출력
         - 결과 반환(필요시 정보 추가)
     '''
-    #### 처리 ####
+    #### 처리 ####    
     # 사전 처리된 내용 기술
-    # 사용자가 데이터 입력 -> 요청(데이터전송) -> pydantic MemoInsert의해
-    # -> 유효성검사 후 MemoInsert에 담김(객체 생성)
-
-    # 메모 데이터를 이용하여 Memo 클레스기반 객체 1개 생성
+    # 사용자 데이터 입력 -> 요청(데이터전송) -> pydantic MemoInsert의해
+    # -> 유효성검사 후 MemoInsert에 담김(객체 생성) 
+    
+    # 메모 데이터를 이용하여 Memo 클레스(DB에 연결된)기반 객체 1개 생성
     # -> Memo 객체 생성(데이터 인자로 전달)
     memo = Memo(title=memo.title, content=memo.content)
 
@@ -113,29 +113,74 @@ async def create_memo(memo : MemoInsert,
     # db_conn을 이용하여 커밋(디비에 실제 반영됨)처리
     db_conn.commit()
 
-    # db_conn을 이용하여 새로고침 처리 -> id값을 획득하는 과정
+    # db_conn을 이용하여 이용하여 새로고침 처리 -> id값을 획득하는 과정
     db_conn.refresh( memo )
 
     # 반환(출력) -> dict 구조로 디비에 저장된 내용(정보)를 반환 (컨셉)
-    return {
-        "id":memo.id,
+    return { 
+        "id"    : memo.id, 
         "title" : memo.title,
         "content" : memo.content
     }
 
 # 메모 조회 -> 최대로 가봐야 페이지번호 -> get
+# 모든 메모 조회 (select * from memo;)하는 API
 @app.get("/memo/")
-async def select_memo():
+async def select_memo(db_conn : Session = Depends(get_connection)):
+    # query(Memo) : memo 테이블에 결과물(셋)은  Memo 클레스에 담겠다
+    # all() : select * from memo; 이 쿼리를 수행하여 
+    #         Memo 객체를 리스트로 담아서 반환
+    return db_conn.query(Memo).all()
     pass
 
 # 메모 수정 -> 조건식 필요 -> 메모를 특정할수 있는 (고유)값필요
 # 경로 매개변수를 통해서 메모 데이터의 고유한 ID를 전달 -> 일반적 디자인
 @app.put("/memo/{memo_id}")
-async def select_memo():
-    pass
+async def select_memo(memo_id : int, memo : MemoUpdate, db_conn : Session = Depends(get_connection)):
+    # 1. 수정하고자 하는 메모 획득 (id가 일치하는 모든 메모중 첫번째 것 획득)
+    target_memo = db_conn.query(Memo).filter(Memo.id == memo_id).first()
+    if not target_memo:
+        return { "type":"error", "msg":"발견된 메모가 없습니다." }
+
+    # 2. 수정하고자 하는 내용이 있는 컬럼만 대체 (수정된것만 보낼 수 있음)
+    if memo.title:
+        target_memo.title = memo.tile       # 제목 대체
+    if memo.content:
+        target_memo.content = memo.content  # 내용 대체
+
+    # 3. 커밋
+    db_conn.commit()
+
+    # 4. 메모 갱신
+    db_conn.refresh( target_memo )
+
+    # 5. 응답 -> 바뀐 내용기반으로 메모 정보를 출력
+    return { "type":"success", "data":{
+        "id"        : target_memo.id,
+        "title"     : target_memo.title,
+        "content"   : target_memo.content
+    } }
 
 # 메모 삭제 -> 조건식 필요-> 메모를 특정할수 있는 (고유)값필요
 # 경로 매개변수를 통해서 메모 데이터의 고유한 ID를 전달 -> 일반적 디자인
 @app.delete("/memo/{memo_id}")
-async def select_memo():
-    pass
+async def delete_memo(memo_id : int, 
+                      db_conn : Session = Depends(get_connection)
+                     ):
+    # 1. 해당 ID에 일치하는(where ~ ) 데이터중 첫번째것 획득
+    # 모든 데이터를 하나씩 꺼내서 Memo 객체에 담고 -> 비교 
+    # -> 일치하는것만 모아서 -> 첫번째것만 추출
+    target_memo = db_conn.query(Memo).filter(Memo.id == memo_id).first()
+
+    # 2. 1번의 결과물이 없다면, 해당 메모는 없다(이미 삭제됨)는 메세지 처리
+    if not target_memo:
+        return { "type":"error", "msg":"발견된 메모가 없습니다." }
+
+    # 3. 메모가 있다면 -> 삭제
+    db_conn.delete( target_memo ) # delete ~ 
+
+    # 4. 커밋
+    db_conn.commit()
+
+    # 5. 응답 -> 삭제 성공 메세지 전송
+    return { "type":"success", "msg":"메모가 삭제되었습니다." }
