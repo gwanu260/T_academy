@@ -37,7 +37,7 @@
 
 # 로컬 PC에 파이썬 설치
     - 설치 첫 페이지에 Add .... Path 반드시 체크
-    - 체크 않하고 설치햇다면 
+    - 체크 안하고 설치햇다면 
         - 사용자 변수 환경변수 추가
             - win + R => 환경변수 엔터 => 사용자 변수 > path 추가
             - C:\Users\사용자명\AppData\Local\Programs\Python\Python314\Scripts\
