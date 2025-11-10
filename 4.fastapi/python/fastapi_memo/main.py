@@ -3,6 +3,8 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
+from typing import Optional
+from sqlalchemy.orm import Session
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -17,13 +19,51 @@ engine      = create_engine( DATABASE_URL )
 BaseTableModel = declarative_base()
 
 # 테이블 구성 -> 메모 관련 마스터 테이블 클래스
-# BaseTableModel을 상속받음으로써 ORM 모델 되고->테이블 구성하게 됨 : 규칙
+# BaseTableModel을 상속받음으로써 ORM 모델 되고 -> 테이블 구성하게 됨 : 규칙
 class Memo(BaseTableModel): 
-    __tablename__ = 'memo'      # 테이블명 Memo객체는 memo 테이블과 연결됨\
+    __tablename__ = 'memo'      # 테이블명 Memo객체는 memo 테이블과 연결됨
     # 컬럼 구성
     id      = Column(Integer, primary_key=True, index=True) # index 검색
     title   = Column(String(128))
     content = Column(String(2048)) # varchar(2048)
+
+# 메모 작성용(Create or insert) 클래스
+# 사용자가 작성한 데이터를 본 객체에 담아서 -> .. -> 디비에 반영
+# Memo Insert => 데이터를 담는 그릇 => DTO(자바 진영의 표현)
+class MemoInsert(BaseTableModel):
+    title : str
+    content : str
+
+# 메모 수정용 클래스
+# 테이블 구조상 Null 허용하게 구성되어 있으므로
+# Optional[str] 이용하여 결측(null or None)도 가능 실제 값도 가능
+class MemoUpdate(BaseTableModel):
+    title : Optional[str]   = None
+    content : Optional[str] = None
+
+# 메모 조회 -> 추후
+# 메모 삭제 -> 추후
+
+# 디비 커넥션 획득 혹은 반납에 관련된 함수
+def get_connection():
+    '''
+    - 각 API(메모 등록/수정/조회/삭제..) 호출시 독립적으로 DB관련 세션(연결)을 제공
+    - 세션을 제공!!을 받음 -> API에게 전달
+    - API가 사용 -> 딜레이 -> 사용종료 -> 세션을 반납!!
+    - 제너레이터 기법을 이용하여 위의 방식을 동기식으로 코드 처리함 => yield
+    '''
+    db_session = Session(bind=engine) # 디비 세션 생성(풀에서 빌림) -> I/O
+    try:
+        yield db_session # API에게 세션을 전달하는 행위
+        # yield를 사용해서 이 함수가 바로 종료되지 않고, 대기함
+        # -> API가 사용 마무리 할 때까지
+    except Exception as e:
+        print('디비 세션 획득 오류', e)
+    finally:
+        if db_session:
+            # (커넥션) 풀에 연결 세션을 반납하는 행위
+            db_session.close()
+            
 
 # BaseTableModel을 상속받은 모든 모델을 찾아라
 # -> 데이터베이스와 연결 확인(연결 진행) -> 테이블 체크 -> 없으면 생성함.
