@@ -140,4 +140,27 @@
         
         - 개별적 데이터를 하나의 구조형 형태(JSON)로 구성하여 통신가능.
         - 파이썬에서는 클래스와 객체에 대한 묘사나 사용이 원할해야 이용 가능함.
-    - client <-> json (형태로) <->server
+    - client <-> json (형태로) <-> server
+
+# fastapi 남은 주제 => 개발
+    - DB 관련 - ORM (코드레벨에서 DB를 컨트롤(sql 대리))
+    - 프레임웍(혹은 MVX 구조(모델))
+        - apirouter(fastapi)<->blueprint(flask) : 고급기능
+        - Model(db관련) View(템플릿) Controller(비즈니스로직, 라우터)
+    - 간단한 서비스 구성 (로그인(기본+암호화+JWT or oAuth2(외부인증:네이버, 카카오, 구글 로그인 붙임) ) + 메모(게시판, todo유사성), 웹소켓이용한채팅(봇)=>LLM사용시, 대시보드(차트구성=>JS 활용)->데이터 및 AI주제를 다룰 때 사용 )
+
+# docker & CI/CD => 관리 및 운영에 좀 더 가까움
+    - CI/CD : 지속적 개발 및 배포 -> 프로젝트 초기에 세팅함(환경 구성)
+        - github + gitaction(깃허브에서 제공하는 CI/CD용 기술) + aws EC2서비스(웹서비스를 위해 서버 임대)
+    - docker -> docker 서버가 설치가 미리 설치되어 있어야함(나름 고사양 필요)
+        - 구성, 특징, 사용이유
+        - cli : command line interface 명령어
+        - docker file : 컨테이너 1개에 대한 세부 구성 설계가능
+        - docker compose : 컨테이너 n개에 대한 세부 구성 설계 가능
+    
+    - docker 기반 CI/CD
+        - docker hub 개입
+    
+    - 쿠버네티스 -> 뒤쪽으로 이동(스케줄)
+        - 운영에 대한 오케스트레이션
+            - n개의 서버, n개의 디비, 등등... -> auto scaling
