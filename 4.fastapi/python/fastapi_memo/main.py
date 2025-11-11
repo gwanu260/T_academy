@@ -128,6 +128,11 @@ BaseTableModel.metadata.create_all(bind=engine)
 def home(req : Request):
     return { "title":"메모 서비스" }
 
+# 리뷰 or ~/login 페이지에서 회원 가입, 로그인 연동
+@app.get("/login")
+def home(req : Request):
+    return templates.TemplateResponse("index.html", {"request":req})
+
 # Auth 관련 라우트
 # 회원가입 -> 사용자정보(비밀번호등) 때문에 post
 @app.post("/signup")
@@ -150,8 +155,17 @@ async def signup(user : UserInsert,
 
 # 로그인 -> 사용자정보(비밀번호등) 때문에 post
 @app.post("/signin")
-async def signin():
-    pass
+async def signin(login_data : UserLogin, 
+                    db_conn : Session = Depends(get_connection) ):
+    # 1. 로그인 데이터중 고유한값 -> username 이 존재하는지 체크
+    target_user = db_conn.query(User).filter(User.username == login_data.username).first()
+    # 2. 해당 유저가 존재하고, 비밀번호가 해싱된 비밀번호와 대조시 일치하면
+    if target_user and check_vaild_password(login_data.password, target_user.hashed_password):
+        # 2-1. 둘다 참이면 => 고객 OK => 세션 생성
+        # 2-2. 더미로 응답
+        return { "msg":"로그인 성공" }
+    return { "msg":"로그인 실패" }
+
 
 # 로그아웃 -> 반드시 JS로 처리한다 -> 브라우저 주소창에 넣어서 구동X
 @app.post("/logout")
