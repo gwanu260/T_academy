@@ -7,7 +7,14 @@ from typing import Optional
 from sqlalchemy.orm import Session
 # 데이터를 담는 그릇의 역활 -> DTO 구성
 from pydantic import BaseModel
+# 암호화 관련 모듈
+from passlib.context import CryptContext
 
+###############################
+#
+# 전역변수 : 앱, 템플릿, 정적폴더, ORM 설정
+#
+###############################
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static",StaticFiles(directory="static"),name="static")
@@ -20,7 +27,7 @@ engine      = create_engine( DATABASE_URL )
 # 테이블 구성에 필요한 재료 준비 -> 모든 ORM 모델들이 상속받아야 할 클레스 구성
 BaseTableModel = declarative_base()
 
-# 테이블 구성 -> 고객관련 마스터 테이블 클래스
+# 테이블 구성 -> 고객 관련 마스터 테이블 클레스
 class User(BaseTableModel):
     __tablename__ = "users"
     id              = Column(Integer, primary_key=True, index=True)
@@ -38,6 +45,21 @@ class UserInsert(BaseModel):
 class UserLogin(BaseModel):
     username    : str
     password    : str # 암호화 하기 전 비밀번호
+    pass
+
+# 해싱 도구 생성
+# bcrypt : 해시 처리할대 사용할 기본 알고리즘중 하나를 지정, 산업표준으로 사용(대표성)
+password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# 암호화 함수
+# 일반 비번 입력 => 해시 처리된 비밀번호를 반환
+def get_hashed_password( password : str ):
+    return password_context.hash( password )
+# get_hashed_password2 = lambda password: password_context.hash( password )
+
+# 일반 비밀 번호, 해시된 비밀번호 입력 => 유효성 검사 (동일한 비번인가 체크)
+def check_vaild_password( ori_password, hashed_password ):
+    return password_context.verify(ori_password, hashed_password)
+
 
 # 테이블 구성 -> 메모 관련 마스터 테이블 클레스
 # BaseTableModel을 상속받음으로써 ORM 모델 되고->테이블 구성하게 됨 : 규칙
@@ -93,15 +115,49 @@ BaseTableModel.metadata.create_all(bind=engine)
 
 
 
-##################################
+###############################
 #
-# 전역변수 : 앱, 템플릿, 정적폴더, ORM 설정
+# 라우팅
 #
-##################################
+###############################
+
+
+
 
 @app.get("/")
 def home(req : Request):
     return { "title":"메모 서비스" }
+
+# Auth 관련 라우트
+# 회원가입 -> 사용자정보(비밀번호등) 때문에 post
+@app.post("/signup")
+async def signup(user : UserInsert, 
+              db_conn : Session = Depends(get_connection) ):
+    # 0. 비밀번호 암호화 (passlib 패키지 활용)
+    hashed_password = get_hashed_password( user.password )
+    # 1. ORM을 통해 데이터베이스에 데이터 입력 
+    # 1-1. User 객체 생성되어야함 (사용자명, 이메일, 암호화된비밀번호)
+    new_user = User(username=user.username,
+                        email=user.email, hashed_password=hashed_password)
+    # 1-2. add()
+    db_conn.add( new_user )
+    # 1-3. commit()
+    db_conn.commit()
+    # 1-4. refresh()
+    db_conn.refresh( new_user ) # id등 등록된 내용으로 새로고침
+    # 2. 응답 -> dict 형태 => {"msg":"가입 완료", "user_id":아이디값}
+    return {"msg":"가입 완료", "user_id":new_user.id}
+
+# 로그인 -> 사용자정보(비밀번호등) 때문에 post
+@app.post("/signin")
+async def signin():
+    pass
+
+# 로그아웃 -> 반드시 JS로 처리한다 -> 브라우저 주소창에 넣어서 구동X
+@app.post("/logout")
+async def logout():
+    pass
+
 
 # restful 방식으로 URL 설계중 -> CRUD -> 기능만 구현중!!(화면 x) -> API 구현중
 # 메모 신규 생성
@@ -162,17 +218,18 @@ async def select_memo(db_conn : Session = Depends(get_connection)):
 # 메모 수정 -> 조건식 필요 -> 메모를 특정할수 있는 (고유)값필요
 # 경로 매개변수를 통해서 메모 데이터의 고유한 ID를 전달 -> 일반적 디자인
 @app.put("/memo/{memo_id}")
-async def select_memo(memo_id : int, memo : MemoUpdate, db_conn : Session = Depends(get_connection)):
-    # 1. 수정하고자 하는 메모 획득 (id가 일치하는 모든 메모중 첫번째 것 획득)
+async def select_memo(memo_id : int, memo : MemoUpdate, 
+                      db_conn : Session = Depends(get_connection)):
+    # 1. 수정하고자 하는 메모 획득 (id가 일치하는 모든 메모중 첫번째것 획득)
     target_memo = db_conn.query(Memo).filter(Memo.id == memo_id).first()
     if not target_memo:
         return { "type":"error", "msg":"발견된 메모가 없습니다." }
-
-    # 2. 수정하고자 하는 내용이 있는 컬럼만 대체 (수정된것만 보낼 수 있음)
+    
+    # 2. 수정하고자 하는 내용이 있는 컬럼만 대체 (수정된것만 보낼수 있음)
     if memo.title:
-        target_memo.title = memo.tile       # 제목 대체
+        target_memo.title = memo.title      # 제목 대체
     if memo.content:
-        target_memo.content = memo.content  # 내용 대체
+        target_memo.content = memo.content  # 내용 대체        
 
     # 3. 커밋
     db_conn.commit()
@@ -198,7 +255,7 @@ async def delete_memo(memo_id : int,
     # -> 일치하는것만 모아서 -> 첫번째것만 추출
     target_memo = db_conn.query(Memo).filter(Memo.id == memo_id).first()
 
-    # 2. 1번의 결과물이 없다면, 해당 메모는 없다(이미 삭제됨)는 메세지 처리
+    # 2. 1번의 결과물이 없다면, 해당 메모는 없다(이미 삭제됨)는 메세지 처
     if not target_memo:
         return { "type":"error", "msg":"발견된 메모가 없습니다." }
 
