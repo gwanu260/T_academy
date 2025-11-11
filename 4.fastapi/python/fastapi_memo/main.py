@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 # 데이터를 담는 그릇의 역활 -> DTO 구성
 from pydantic import BaseModel
 # 암호화 관련 모듈
-from passlib.context import CryptContext
+import bcrypt
 
 ###############################
 #
@@ -33,7 +33,7 @@ class User(BaseTableModel):
     id              = Column(Integer, primary_key=True, index=True)
     username        = Column(String(128), unique=True, index=True)
     email           = Column(String(256))
-    hashed_password = Column(String(512))
+    hashed_password = Column(String(72))
 
 # 회원가입시 데이터를 담을 그릇 -> DTO
 class UserInsert(BaseModel):
@@ -47,19 +47,19 @@ class UserLogin(BaseModel):
     password    : str # 암호화 하기 전 비밀번호
     pass
 
-# 해싱 도구 생성
-# bcrypt : 해시 처리할대 사용할 기본 알고리즘중 하나를 지정, 산업표준으로 사용(대표성)
-password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # 암호화 함수
 # 일반 비번 입력 => 해시 처리된 비밀번호를 반환
 def get_hashed_password( password : str ):
-    return password_context.hash( password )
-# get_hashed_password2 = lambda password: password_context.hash( password )
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+#hash_pwd = get_hashed_password("1234")
+#print( "1234", hash_pwd )
 
 # 일반 비밀 번호, 해시된 비밀번호 입력 => 유효성 검사 (동일한 비번인가 체크)
 def check_vaild_password( ori_password, hashed_password ):
-    return password_context.verify(ori_password, hashed_password)
-
+    return bcrypt.checkpw(ori_password.encode('utf-8'), 
+                          hashed_password.encode('utf-8') )
+#print( check_vaild_password("1234", hash_pwd) )
 
 # 테이블 구성 -> 메모 관련 마스터 테이블 클레스
 # BaseTableModel을 상속받음으로써 ORM 모델 되고->테이블 구성하게 됨 : 규칙
@@ -137,16 +137,16 @@ async def signup(user : UserInsert,
     hashed_password = get_hashed_password( user.password )
     # 1. ORM을 통해 데이터베이스에 데이터 입력 
     # 1-1. User 객체 생성되어야함 (사용자명, 이메일, 암호화된비밀번호)
-    new_user = User(username=user.username,
-                        email=user.email, hashed_password=hashed_password)
+    new_user = User(username=user.username, 
+                       email=user.email, hashed_password=hashed_password)
     # 1-2. add()
     db_conn.add( new_user )
     # 1-3. commit()
     db_conn.commit()
     # 1-4. refresh()
     db_conn.refresh( new_user ) # id등 등록된 내용으로 새로고침
-    # 2. 응답 -> dict 형태 => {"msg":"가입 완료", "user_id":아이디값}
-    return {"msg":"가입 완료", "user_id":new_user.id}
+    # 2. 응답 -> dict 형태 => {"msg":"가입 완료", "user_id":아이디값 }
+    return {"msg":"가입 완료", "user_id":new_user.id }
 
 # 로그인 -> 사용자정보(비밀번호등) 때문에 post
 @app.post("/signin")
