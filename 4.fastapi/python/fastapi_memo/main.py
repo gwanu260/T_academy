@@ -75,10 +75,15 @@ BaseTableModel.metadata.create_all(bind=engine)
 
 @app.get("/")
 def home(req : Request,
-         db_conn : Session = Depends(get_connection)):
+         db_conn : Session = Depends(get_connection)
+         ):
     # html 읽어서 -> 필요한 데이터를 전달하여 -> 데이터 이용하여 동적으로 html 구성
-    # html을 응답 => TemplateResponse
-    return templates.TemplateResponse('memo.html',{"request":req})
+    # -> html을 응답 => TemplateResponse
+    memos = db_conn.query(Memo).all() # 모든 메모 가져오기
+    return templates.TemplateResponse('memo.html', {
+        "request": req,
+        "memos"  : memos
+    })
 
 # restful 방식으로 URL 설계중 -> CRUD -> 기능만 구현중!!(화면 x) -> API 구현중
 # 메모 신규 생성
@@ -139,17 +144,18 @@ async def select_memo(db_conn : Session = Depends(get_connection)):
 # 메모 수정 -> 조건식 필요 -> 메모를 특정할수 있는 (고유)값필요
 # 경로 매개변수를 통해서 메모 데이터의 고유한 ID를 전달 -> 일반적 디자인
 @app.put("/memo/{memo_id}")
-async def select_memo(memo_id : int, memo : MemoUpdate, db_conn : Session = Depends(get_connection)):
-    # 1. 수정하고자 하는 메모 획득 (id가 일치하는 모든 메모중 첫번째 것 획득)
+async def select_memo(memo_id : int, memo : MemoUpdate, 
+                      db_conn : Session = Depends(get_connection)):
+    # 1. 수정하고자 하는 메모 획득 (id가 일치하는 모든 메모중 첫번째것 획득)
     target_memo = db_conn.query(Memo).filter(Memo.id == memo_id).first()
     if not target_memo:
         return { "type":"error", "msg":"발견된 메모가 없습니다." }
-
-    # 2. 수정하고자 하는 내용이 있는 컬럼만 대체 (수정된것만 보낼 수 있음)
+    
+    # 2. 수정하고자 하는 내용이 있는 컬럼만 대체 (수정된것만 보낼수 있음)
     if memo.title:
-        target_memo.title = memo.tile       # 제목 대체
+        target_memo.title = memo.title      # 제목 대체
     if memo.content:
-        target_memo.content = memo.content  # 내용 대체
+        target_memo.content = memo.content  # 내용 대체        
 
     # 3. 커밋
     db_conn.commit()
@@ -175,7 +181,7 @@ async def delete_memo(memo_id : int,
     # -> 일치하는것만 모아서 -> 첫번째것만 추출
     target_memo = db_conn.query(Memo).filter(Memo.id == memo_id).first()
 
-    # 2. 1번의 결과물이 없다면, 해당 메모는 없다(이미 삭제됨)는 메세지 처리
+    # 2. 1번의 결과물이 없다면, 해당 메모는 없다(이미 삭제됨)는 메세지 처
     if not target_memo:
         return { "type":"error", "msg":"발견된 메모가 없습니다." }
 

@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <title>메모앱</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet">
     <style>
-        .container { 
-            margin-top: 20px; 
+        .container {
+            margin-top: 20px;
             max-width: 800px;
         }
-        
+
         .card {
             margin-bottom: 20px;
             border: none;
-            box-shadow: 0 4px 8px rgba(0,0,0,.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, .1);
             background-color: #fff;
         }
 
@@ -23,7 +24,8 @@
             padding: 10px;
         }
 
-        .memo-title, .memo-content {
+        .memo-title,
+        .memo-content {
             width: 100%;
             margin-bottom: 10px;
             border: 1px solid #ddd;
@@ -93,65 +95,83 @@
             display: block;
             width: 100%;
         }
-    
+
         .header-bar {
-            background-color: #FF8066; /* 변경된 헤더바 배경색 */
-            padding: 10px 0; /* 상하 패딩 */
-            text-align: center; /* 텍스트 가운데 정렬 */
-            border-radius: 10px; /* 둥근 꼭짓점 */
-            box-shadow: 0 4px 6px rgba(0,0,0,.1); /* 그림자 효과 */
-            animation: slideDown 0.5s ease-out; /* 슬라이드 다운 애니메이션 */
+            background-color: #FF8066;
+            /* 변경된 헤더바 배경색 */
+            padding: 10px 0;
+            /* 상하 패딩 */
+            text-align: center;
+            /* 텍스트 가운데 정렬 */
+            border-radius: 10px;
+            /* 둥근 꼭짓점 */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, .1);
+            /* 그림자 효과 */
+            animation: slideDown 0.5s ease-out;
+            /* 슬라이드 다운 애니메이션 */
             margin: 10px;
             position: relative;
-            display: flex; /* 플렉스박스 레이아웃 적용 */
-            justify-content: center; /* 가로 중앙 정렬 */
-            align-items: center; /* 세로 중앙 정렬 */            
+            display: flex;
+            /* 플렉스박스 레이아웃 적용 */
+            justify-content: center;
+            /* 가로 중앙 정렬 */
+            align-items: center;
+            /* 세로 중앙 정렬 */
         }
-        
+
         .header-item {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
         }
-    
+
         .header-item:first-child {
             left: 20px;
         }
-    
+
         .header-item:last-child {
             right: 20px;
         }
-    
-        .username-button, .logout-button {
+
+        .username-button,
+        .logout-button {
             display: flex;
             align-items: center;
         }
-    
-        .username-button i, .logout-button i {
+
+        .username-button i,
+        .logout-button i {
             margin-right: 5px;
-        }        
-    
+        }
+
         .header-bar h1 {
-            color: white; /* 헤더바 텍스트 색상 */
-            margin: 0; /* 여백 제거 */
-            font-size: 1.3em; /* 폰트 크기 조정 */
+            color: white;
+            /* 헤더바 텍스트 색상 */
+            margin: 0;
+            /* 여백 제거 */
+            font-size: 1.3em;
+            /* 폰트 크기 조정 */
             font-weight: bold;
-            transition: all 0.3s ease-in-out; /* 부드러운 변화 효과 */
+            transition: all 0.3s ease-in-out;
+            /* 부드러운 변화 효과 */
         }
 
         .header-content {
             text-align: center;
         }
-    
+
         .user-info {
-            position: absolute; /* 절대 위치 지정 */
+            position: absolute;
+            /* 절대 위치 지정 */
             top: 10px;
             right: 20px;
-            font-size: 0.9rem; /* 폰트 크기 조정 */
+            font-size: 0.9rem;
+            /* 폰트 크기 조정 */
         }
-    
+
         .logout-button {
-            margin-left: 10px; /* 로그아웃 버튼과 사용자 ID 사이의 간격 */
+            margin-left: 10px;
+            /* 로그아웃 버튼과 사용자 ID 사이의 간격 */
         }
 
         .btn-sm {
@@ -159,20 +179,21 @@
             font-size: .8rem;
             line-height: 1.5;
             border-radius: 0.2rem;
-        }     
-    
+        }
+
         /* 슬라이드 다운 애니메이션 효과 */
         @keyframes slideDown {
             from {
                 transform: translateY(-100%);
                 opacity: 0;
             }
+
             to {
                 transform: translateY(0);
                 opacity: 1;
             }
-        }       
-    </style>    
+        }
+    </style>
 </head>
 
 <body>
@@ -182,23 +203,115 @@
             <div class="card-body">
                 <input type="text" id="new-title" placeholder="새 메모 제목" class="form-control memo-title">
                 <textarea id="new-content" placeholder="내용을 입력하세요" class="form-control memo-content"></textarea>
-                <button class="btn btn-primary btn-block">메모 추가</button>
+                <button class="btn btn-primary btn-block" onclick="createMemo();">메모 추가</button>
             </div>
         </div>
-        
+
         {# 메모 게시판 #}
         {% for memo in memos %}
         <div class="card memo">
-            <div class="card-body">               
-                <input type="text" id="title-{{ memo.id }}" value="{{ memo.title }}" class="form-control memo-title" readonly>
-                <textarea id="content-{{ memo.id }}" class="form-control memo-content" readonly>{{ memo.content }}</textarea>
+            <div class="card-body">
+                <input type="text" id="title-{{ memo.id }}" value="{{ memo.title }}" class="form-control memo-title"
+                    readOnly>
+                <textarea id="content-{{ memo.id }}" class="form-control memo-content"
+                    readOnly>{{ memo.content }}</textarea>
                 <div class="edit-buttons">
-                    <button class="btn btn-edit"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-delete"><i class="fas fa-trash-alt"></i></button>
-                </div>                  
+                    <button class="btn btn-edit" onclick="toggleEditUpdateMemo({{ memo.id }});"><i
+                            class="fas fa-edit"></i></button>
+                    <button class="btn btn-delete" onclick="deleteMemo({{ memo.id }});"><i
+                            class="fas fa-trash-alt"></i></button>
+                </div>
             </div>
         </div>
         {% endfor %}
     </div>
+    <script>
+        function createMemo() {
+            // 1. 메모의 제목, 내용 획득 -> 데이터 -> 담는 그릇 -> 변수
+            //    요소(element)를 특정(제공되는함수 or css selector or xpath) 
+            //    -> 값 추출 혹은 조작 혹은 이벤트 ...
+            let memo_title = document.getElementById("new-title").value;
+            let memo_content = document.getElementById("new-content").value;
+            console.log('메모 신규 등록 처리', memo_title, memo_content);
+            // 2. 통신 -> fetch(), post방식, json형식으로 데이터 전송
+            fetch("/memo/", {
+                method: "POST",
+                headers: { // 서버측에서 전달하는 데이터는 json 형식임을 통보
+                    "Content-Type": "application/json"
+                },
+                // {} 객체를 텍스트(문자열)로 변환해서 통신 처리함
+                // 객체 -> 문자열 변환 : 객체 직렬화
+                // 문자열 -> 객체 복원 : 객체 역직렬화
+                body: JSON.stringify({
+                    "title": memo_title,
+                    "content": memo_content
+                })
+            })
+                .then(res => res.json()) // 응답 내용(텍스트) -> {} 객체 변환
+                .then(data => {
+                    console.log(data) // 응답 내용 출력
+                    alert('메모가 등록 되었습니다.') // 알림창
+                    // 현 페이지 새로고침
+                    window.location.reload();
+                })
+        }
+        function deleteMemo(memo_id) {
+            // 메모 id를 가져오는 방법 고민 혹은 적용
+            console.log(memo_id, '메모 삭제')
+            // 메모 삭제 URL 호출 -> 화면갱신
+            fetch("/memo/" + memo_id, {
+                method: "DELETE"
+            })
+                // { "type":"success", "msg":"메모가 삭제되었습니다." }
+                .then(res => res.json()) // 텍스트:문자열 -> {}:객체 변환
+                // res.json() === data 같은 값
+                .then(data => {
+                    console.log('응답결과', data)
+                    //alert( data["msg1"] ) // 객체에서 맴버 접근 출력
+                    alert(data.msg1)
+                    window.location.reload(); // 목록이 줄어든것을 확인할수 있음
+                })
+        }
+        function toggleEditUpdateMemo(memo_id) {
+            console.log(memo_id, '편집 토글 + 메모 업데이트');
+            // 1. 요소 특정 -> input, textarea
+            let titleElement = document.getElementById("title-" + memo_id);
+            let contentElement = document.getElementById("content-" + memo_id);
+            console.log(titleElement.readOnly);
+            let curIsEdit = titleElement.readOnly; // 현재 편집모드
+            // 토글 처리
+            // T->F, F->T  바꿔줌
+            // !curIsEdit => ! + true => flase
+            titleElement.readOnly = !curIsEdit; // 제목 편집모드 수정
+            contentElement.readOnly = !curIsEdit; // 내용 편집모드 수정
+            // 변수 = 값 => 변수값이 바뀜
+
+            if (!curIsEdit) { // 편집한 후 수정 내용 반영
+                console.log("편집된 내용을 수정!!");
+                // 1. 편집한 내용 획득 -> 대상특정 -> 값추출                
+                let memo_title = titleElement.value;
+                let memo_content = contentElement.value;
+
+                // 2. 통신(수정요청, PUT, 전달데이터는 등록과 동일) -> 결과 처리(새로고침)
+                fetch("/memo/"+memo_id, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "title": memo_title,
+                        "content": memo_content
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log(data) // 응답 내용 출력
+                    alert('메모가 수정(업데이트) 되었습니다.') // 알림창
+                    // 현 페이지 새로고침 -> 이미 반영되었음(수정된채로 업데이트)
+                })
+            }
+        }
+    </script>
 </body>
+
 </html>
