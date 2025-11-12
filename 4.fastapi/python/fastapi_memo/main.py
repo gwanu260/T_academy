@@ -53,7 +53,7 @@ class UserInsert(BaseModel):
 class UserLogin(BaseModel):
     username    : str
     password    : str # 암호화 하기 전 비밀번호
-    
+
 
 # 암호화 함수
 # 일반 비번 입력 => 해시 처리된 비밀번호를 반환
@@ -143,7 +143,7 @@ def home(req : Request):
 
 # Auth 관련 라우트
 # 회원가입 -> 사용자정보(비밀번호등) 때문에 post
-@app.post("/signup")
+@app.post("/signup/")
 async def signup(user : UserInsert, 
               db_conn : Session = Depends(get_connection) ):
     # 0. 비밀번호 암호화 (passlib 패키지 활용)
@@ -162,7 +162,7 @@ async def signup(user : UserInsert,
     return {"msg":"가입 완료", "user_id":new_user.id }
 
 # 로그인 -> 사용자정보(비밀번호등) 때문에 post
-@app.post("/signin")
+@app.post("/signin/")
 async def signin(req        : Request,
                  login_data : UserLogin, 
                     db_conn : Session = Depends(get_connection) ):
