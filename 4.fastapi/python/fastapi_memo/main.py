@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import create_engine, Column, Integer, String
@@ -174,7 +174,9 @@ async def signin(req        : Request,
         req.session["username"] = login_data.username
         # 2-2. 더미로 응답
         return { "msg":"로그인 성공" }
-    return { "msg":"로그인 실패" }
+    # 응답 코드를 설정하여 응답 (401 => 권한없음)
+    # HTTPException => 응답 헤더로 설정이 아닌, 메세지에 원하는 응답 코드를 설정한 유형
+    return HTTPException(401, "로그인 실패 (해당 아이디가 존재하지 않거나, 비밀번호가 다릅니다.)")
 
 
 # 로그아웃 -> 반드시 JS로 처리한다 -> 브라우저 주소창에 넣어서 구동X

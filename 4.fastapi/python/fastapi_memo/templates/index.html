@@ -12,6 +12,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            
             text-align: center;
         }
         .container {
@@ -86,7 +87,7 @@
         <h4>로그인</h4>
         <form id="loginForm" onsubmit="submitLoginForm(event)">
             <div class="form-group">
-                <input type="text" id="username" name="username" placeholder="사용자이름" required>
+                <input type="text" id="username" name="username" placeholder="사용자 이름" required>
             </div>
             <div class="form-group">
                 <input type="password" id="password" name="password" placeholder="비밀번호" required>
@@ -95,14 +96,13 @@
                 <button type="submit">로그인</button>
             </div>
         </form>
-
         <h4>회원가입</h4>
         <form id="signupForm" onsubmit="submitSignupForm(event)">
-            {# 스마트폰의 가상키패드를 위한 설정+유효성+편의성 => type#}
+            {# 스마트폰의 가상키패드를 위한 설정+유효성+편의성 => type #}
             <div class="form-group">
-                <input type="text" id="signup_username" name="username" placeholder="사용자이름" required>
+                <input type="text" id="signup_username" name="username" placeholder="사용자 이름" required>
             </div>
-            <div class="form-group">
+            <div class="form-group">                
                 <input type="email" id="signup_email" name="email" placeholder="이메일" required>
             </div>
             <div class="form-group">
@@ -114,15 +114,15 @@
         </form>
     </div>
     <script>
-        // 편의상(여러번 테스트 한다는 전제) 입력창을 미리 채움
+        // 편의상(여러번 테스트 한다는 전제) 입력창을 미리 채움        
         document.getElementById("signup_username").value = "guest";
         document.getElementById("signup_email").value = "a@a.com";
         document.getElementById("signup_password").value = "1234";
 
         // 회원가입 처리용 이벤트 함수(혹은 콜백함수)
         function submitSignupForm(evt) {
-            // submit 이벤트 발생 => form 전송 => 화면 껌벅!! => 새로운 페이지 요청되었다는 의미 <- 무효화
-            // 무효화 하면 얻는 이점 => 원하는 시점에 통신 가능 => 화면 껌벅 x => ajax 사용 가능
+            // submit 이벤트 발생 => form 전송 => 화면 껌벅!! => 새로운 페이지 요청되었다는 의미 <-무효화
+            // 무효화 하면 얻는 이점 => 원하는 시점에 통시 가능 => 화면 껌벅 x => ajax 사용 가능
             evt.preventDefault();
             console.log("회원 가입 처리");
             // 1. 입력값 획득 => { ... } 구성
@@ -131,9 +131,8 @@
                 username    : document.getElementById("signup_username").value,
                 email       : document.getElementById("signup_email").value,
                 password    : document.getElementById("signup_password").value
-
             };
-            console.log(param);
+            console.log( param );
             // 방법 2 -> Form 태그로 감싸져 있는 Input 태그에서 데이터 획득 -> Form 데이터
             const formData = new FormData( evt.target ); // evt.target -> <form>
             const param2 = {
@@ -143,25 +142,84 @@
                 password    : formData.get("password")
             };
             console.log( param2 );
-
+            
             // 2. 서버측에게 데이터 전송 => 회원가입 처리 요청(POST, /signup/)
             fetch("/signup/",{
-                method : "POST",
+                method: "POST",
                 headers: {
-                    "Content-Type" : "application/json"
+                    "Content-Type": "application/json"
                 },
-                body : JSON.stringify( param )
+                body: JSON.stringify( param )
             })
-            .then( res => res.json() )
+            .then( res    => res.json()
+                // 원래 존재했던 res의 많은 데이터중 응답코드와 실응답값만 재구성
+                .then( resJson => ({ code:res.status, body:resJson }) ) )
             .then( result => {
-                console.log( "가입 성공", result );
+                if (result.code === 200) { // 응답코드 확인 가능해짐
+                    console.log( "가입 성공", result.body );
+                    alert("회원 가입 성공");
+                    //document.location.href = "/memo/"; // 향후 브런치 통합후 구성    
+                }else{
+                    // 통신 되었지만, 회원 가입 실패 경우!!
+                    throw new Error("회원 가입 실패");
+                }                
             })
-            .catch( err => {
-                console.log("가입 실패", err);
-                alert("회원 가입 실패");
+            .catch( err => { 
+                console.log("가입 싪패", err);
+                alert(err.message); 
             })
 
+
             return false;
+        }
+
+        // 로그인 처리 함수
+        function submitLoginForm(evt) {
+            evt.preventDefault();
+            console.log("로그인 처리");
+            // 1. 로그인 시 전달할 데이터 구성 => { .. } => JSON 문자열 => 서버측 => UserLogin 객체
+            const param = {
+                username    : document.getElementById("username").value,
+                password    : document.getElementById("password").value
+            };
+            console.log( param );
+            // 2. 로그인 실제 통신 (요청) -> 응답 -> 화면처리
+            fetch("/signin/",{
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify( param )
+            })
+            .then( res    =>{ 
+                console.log( res ); // 통신후 최초로 받은 응답 내용
+                return res
+                        .json()
+                        .then( resJson => ({ code:res.status, body:resJson }) ) 
+            })
+            .then( result => {
+                console.log( "최종 화면 처리" , result )
+                if (result.code === 200) {
+                    if (result.body.status_code === 401) {
+                        alert(result.body.detail);
+                        // 현재 페이지 새로고침!!
+                    }else{
+                        console.log( "로그인 성공", result.body );
+                        alert("로그인 성공");
+                        document.location.href = "/memo/"; // 향후 브런치 통합후 구성
+                    }       
+                }else{
+                    throw new Error("로그인 실패");
+                }                
+            })
+            .catch( err => { 
+                console.log("로그인 실패", err);
+                alert(err.message); 
+            })
+
+
+            return false;
+            
         }
     </script>
 </body>
