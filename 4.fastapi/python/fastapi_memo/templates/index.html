@@ -12,7 +12,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             text-align: center;
         }
         .container {
@@ -87,36 +86,66 @@
         <h4>로그인</h4>
         <form id="loginForm" onsubmit="submitLoginForm(event)">
             <div class="form-group">
-                <label for="username">사용자 이름:</label>
-                <input type="text" id="username" name="username" required>
+                <input type="text" id="username" name="username" placeholder="사용자이름" required>
             </div>
             <div class="form-group">
-                <label for="password">비밀번호:</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" placeholder="비밀번호" required>
             </div>
             <div class="buttons">
                 <button type="submit">로그인</button>
             </div>
         </form>
-        <br><br>
+
         <h4>회원가입</h4>
         <form id="signupForm" onsubmit="submitSignupForm(event)">
+            {# 스마트폰의 가상키패드를 위한 설정+유효성+편의성 => type#}
             <div class="form-group">
-                <label for="signup_username">사용자 이름:</label>
-                <input type="text" id="signup_username" name="username" required>
+                <input type="text" id="signup_username" name="username" placeholder="사용자이름" required>
             </div>
             <div class="form-group">
-                <label for="signup_email">이메일:</label>
-                <input type="email" id="signup_email" name="email" required>
+                <input type="email" id="signup_email" name="email" placeholder="이메일" required>
             </div>
             <div class="form-group">
-                <label for="signup_password">비밀번호:</label>
-                <input type="password" id="signup_password" name="password" required>
+                <input type="password" id="signup_password" name="password" placeholder="비밀번호" required>
             </div>
             <div class="buttons">
                 <button type="submit">회원가입</button>
             </div>
         </form>
     </div>
+    <script>
+        // 편의상(여러번 테스트 한다는 전제) 입력창을 미리 채움
+        document.getElementById("signup_username").value = "guest";
+        document.getElementById("signup_email").value = "a@a.com";
+        document.getElementById("signup_password").value = "1234";
+
+        // 회원가입 처리용 이벤트 함수(혹은 콜백함수)
+        function submitSignupForm(evt) {
+            // submit 이벤트 발생 => form 전송 => 화면 껌벅!! => 새로운 페이지 요청되었다는 의미 <- 무효화
+            // 무효화 하면 얻는 이점 => 원하는 시점에 통신 가능 => 화면 껌벅 x => ajax 사용 가능
+            evt.preventDefault();
+            console.log("회원 가입 처리");
+            // 1. 입력값 획득 => { ... } 구성
+            // 실습 1분, 방법 1
+            const param = {
+                username    : document.getElementById("signup_username").value,
+                email       : document.getElementById("signup_email").value,
+                password    : document.getElementById("signup_password").value
+
+            };
+            console.log(param);
+            // 방법 2 -> Form 태그로 감싸져 있는 Input 태그에서 데이터 획득 -> Form 데이터
+            const formData = new FormData( evt.target ); // evt.target -> <form>
+            const param2 = {
+                // input 태그의 name 속성값으로 추출
+                username    : formData.get("username"),
+                email       : formData.get("email"),
+                password    : formData.get("password")
+            };
+            console.log( param2 );
+
+            return false;
+        }
+    </script>
 </body>
 </html>
