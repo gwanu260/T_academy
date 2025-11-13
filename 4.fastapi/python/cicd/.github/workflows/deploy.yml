@@ -1,0 +1,15 @@
+name : 배포 Fastapi to Ec2
+
+# CICD라는 개념이 작동하는 것은
+# main 브런치에서 push 이벤트가 발생시 작동됨
+on :
+    push:
+        branches:
+            - main
+
+# 개별 작업(job)들 나열
+jobs:
+    # deploy 라는 잡을 하나 설정 -> n개 가능
+    deploy:
+        # 어떤 OS에서 진행할것인가?
+        runs-on: ubuntu-latest
